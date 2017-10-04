@@ -103,7 +103,7 @@ Bumping patch version in library: '1.0.0' -> 1.0.1
 # a minor enhancement!
 ./bin/bump-version -b minor
 Bumping minor version in library: '1.0.1' -> 1.1.0
-
+```
 
 ## Specifying the version file
 ```
