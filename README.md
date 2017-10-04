@@ -1,7 +1,7 @@
 # bump-version
 No frills, simple semantic version bumping for python projects.
 
-bump-version stores the version in yourmodule/__init__.py under the __version__ field. It also uses git to commit the new version and tag it. 
+bump-version stores the version in ```yourmodule/__init__.py``` under the ```__version__``` field. If you store your ```__version__``` field elsewhere, bump-version can use that too. bump-version uses git to commit the new version and tag it. 
 
 ## Install:
 
