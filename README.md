@@ -25,11 +25,13 @@ curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/bump-vers
 popd
 ```
 
-### Create example python project
+### Example python project
 
 ```
 ./bin/bump-version
 Error! No init files found!
+
+# this is expected, let's create a module along with the typical support files:
 
 mkdir mymod
 touch mymod/__init__.py
@@ -38,6 +40,7 @@ touch tests/__init__.py
 mkdir docs
 git add bin/ mymod/
 git commit -m 'Initial commit.'
+
 ./bin/bump-version
 Usage: ./bin/bump-version <major|minor|patch>
 Current version: Unknown
@@ -49,20 +52,24 @@ Current version: Unknown
 Bumping major version in library: 0.0.0 -> 1.0.0
 ```
 
-### Check tags and commits
+### Verify tags and commits
 ```
+# let's check that the bump-version command knows about the current version:
+./bin/bump-version
+Usage: ./bin/bump-version <major|minor|patch>
+Current version: '1.0.0'
+
+# let's check the git log:
 git log --pretty=oneline
 # should see something like:
 4042ff92ae5a719e6b755950cafd2098ccb5233b release: bump version to 1.0.0
 91d2a145c2f959e42cdcbe13d51e4c468e5bf587 Initial commit.
 
+# let's check the tags:
 git tag
 1.0.0
 
+# let's see where the __version__ attribute is stored:
 cat mymod/__init__.py
 __version__ = '1.0.0'
 ```
-
-
-
-
