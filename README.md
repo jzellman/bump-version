@@ -22,6 +22,7 @@ git init .
 mkdir bin
 pushd bin
 curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/bump-version
+chmod +x bump-version
 popd
 ```
 
