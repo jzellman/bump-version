@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import argparse
 import os
 import re
 import subprocess
@@ -18,10 +19,10 @@ def find_version_file():
     init_files = [p for p in init_files
                   if os.path.exists(p) and 'test' not in p]
     if len(init_files) > 1:
-        print("Error! Multiple init files found! %s" % init_files)
+        print("Error! Multiple __init__ files found! %s" % init_files)
         sys.exit(2)
     elif not init_files:
-        print("Error! No init files found!")
+        print("Error! No __init__ files found!")
         sys.exit(3)
     else:
         return init_files[0]
@@ -29,12 +30,6 @@ def find_version_file():
 
 BUMP_TYPES = ['major', 'minor', 'patch']
 
-
-def usage(current_version=None):
-    print("Usage: %s <optional file> <major|minor|patch>" % __file__)
-    if current_version:
-        print("Current version: %s" % current_version)
-    sys.exit(1)
 
 
 def command(command):
@@ -122,20 +117,6 @@ def bump_test(start, type, expected):
     assert expected == calculated, calculated
 
 
-def parse_args():
-    """
-    Support 2 formats:
-        just version, eg: patch
-        version file path and version, eg: mymod/__init__.py major
-    """
-    if len(sys.argv) == 2:
-        return None, sys.argv[1]
-    elif len(sys.argv) == 3:
-        return sys.argv[1:3]
-    else:
-        return None, None
-
-
 if __name__ == '__main__':
     bump_test('0.0.0', 'major', '1.0.0')
     bump_test('1.0.0', 'patch', '1.0.1')
@@ -143,22 +124,31 @@ if __name__ == '__main__':
     bump_test('1.1.0', 'patch', '1.1.1')
     bump_test('1.1.1', 'major', '2.0.0')
 
-    version_file_path, bump_type = parse_args()
+    parser = argparse.ArgumentParser(description='Bump versions semantically. Example: %s -b patch' % __file__)
+    parser.add_argument('-f', dest='version_file_path',
+                        help='optional version file path', required=False)
+    parser.add_argument('-b', dest='bump_type', help='major,minor,patch', required=False)
+
+    args = parser.parse_args()
+
+    version_file_path = args.version_file_path
+    bump_type = args.bump_type
 
     if not version_file_path:
         version_file_path = find_version_file()
 
     if version_file_path and not os.path.isfile(version_file_path):
         print("'%s' doesn't exist!" % version_file_path)
-        usage()
+        sys.exit(1)
 
     version_bumper = VersionBumper(version_file_path)
 
     if not bump_type:
-        usage(version_bumper.find_version('Unknown'))
+        print("Current version: %s" % version_bumper.find_version('Unknown'))
+        sys.exit(2)
 
     if bump_type not in BUMP_TYPES:
         print("'%s' is not a known version bump type." % bump_type)
-        usage()
+        sys.exit(3)
 
     version_bumper.bump_version(bump_type)
