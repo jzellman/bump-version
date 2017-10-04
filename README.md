@@ -3,7 +3,7 @@ No frills, simple semantic version bumping for python projects.
 
 bump-version stores the version in yourmodule/__init__.py under the __version__ field. It also uses git to commit the new version and tag it. 
 
-##Install:
+## Install:
 
 Just download the bump-version executable and place into your vendor/scripts/bin directory of your project
 or stick it in your $HOME/bin or /usr/local/bin directory:
@@ -12,7 +12,7 @@ or stick it in your $HOME/bin or /usr/local/bin directory:
 curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/bump-version
 ```
 
-##Usage:
+## Usage:
 
 ### Example setup
 ```
