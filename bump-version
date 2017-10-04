@@ -75,8 +75,8 @@ class VersionBumper:
             print("Tag for version %s already exists!" % new_version)
             sys.exit(2)
 
-        print("Bumping %s version in library: %s -> %s" % (
-            bump_type, current_version, new_version))
+        print("Bumping %s version in '%s': %s -> %s" % (
+            bump_type, self.version_file, current_version, new_version))
 
         self.write_new_version(new_version)
 
@@ -91,7 +91,7 @@ class VersionBumper:
     def find_version(self, default):
         for line in self.read_version_file():
             if line.startswith('__version__'):
-                return line.split("=")[1].strip()
+                return line.split("=")[1].strip().replace("'", "").replace('"', '')
         return default
 
     def write_new_version(self, version):
@@ -128,11 +128,13 @@ if __name__ == '__main__':
     parser.add_argument('-f', dest='version_file_path',
                         help='optional version file path', required=False)
     parser.add_argument('-b', dest='bump_type', help='major,minor,patch', required=False)
+    parser.add_argument('--verbose', '-v', action='count')
 
     args = parser.parse_args()
 
     version_file_path = args.version_file_path
     bump_type = args.bump_type
+    verbose = bool(args.verbose)
 
     if not version_file_path:
         version_file_path = find_version_file()
@@ -144,7 +146,12 @@ if __name__ == '__main__':
     version_bumper = VersionBumper(version_file_path)
 
     if not bump_type:
-        print("Current version: %s" % version_bumper.find_version('Unknown'))
+        if verbose:
+            print("Current version in '%s': %s" % (
+                version_bumper.version_file,
+                version_bumper.find_version('Unknown')))
+        else:
+            print(version_bumper.find_version('Unknown'))
         sys.exit(2)
 
     if bump_type not in BUMP_TYPES:
