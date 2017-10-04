@@ -1,0 +1,164 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import os
+import re
+import subprocess
+import sys
+
+__version__ = '2.0.0'
+
+
+def find_version_file():
+    if os.path.exists('__init__.py'):
+        return '__init__.py'
+    dirs = [d for d in os.listdir('.') if os.path.isdir(d)]
+    init_files = [os.path.join(d, '__init__.py') for d in dirs]
+    init_files = [p for p in init_files
+                  if os.path.exists(p) and 'test' not in p]
+    if len(init_files) > 1:
+        print("Error! Multiple init files found! %s" % init_files)
+        sys.exit(2)
+    elif not init_files:
+        print("Error! No init files found!")
+        sys.exit(3)
+    else:
+        return init_files[0]
+
+
+BUMP_TYPES = ['major', 'minor', 'patch']
+
+
+def usage(current_version=None):
+    print("Usage: %s <optional file> <major|minor|patch>" % __file__)
+    if current_version:
+        print("Current version: %s" % current_version)
+    sys.exit(1)
+
+
+def command(command):
+    proc = subprocess.Popen([command],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=True)
+    out, err = proc.communicate()
+    if err:
+        raise StandardError(err)
+    return out.decode()
+
+
+def current_tags():
+    return command('git tag').split('\n')
+
+
+def calculate_bump(current_version, bump_type):
+    # the offset of the bump type
+    bump_offset = BUMP_TYPES.index(bump_type)
+    version_part_strs = re.compile(r'(\d+)\.?').findall(current_version)
+    version_parts = [int(p) for p in version_part_strs]
+    for part_index, __ in enumerate(version_parts):
+        # if the index is the offset then increment
+        if part_index == bump_offset:
+            version_parts[part_index] += 1
+        # if the index is greater than offset
+        # (patch index for a minor bump) then reset to 0
+        elif part_index > bump_offset:
+            version_parts[part_index] = 0
+    return ".".join(map(str, version_parts))
+
+
+class VersionBumper:
+    def __init__(self, path):
+        self.version_file = path
+
+    def bump_version(self, bump_type):
+        current_version = self.find_version('0.0.0')
+        new_version = calculate_bump(current_version, bump_type)
+
+        if new_version in current_tags():
+            print("Tag for version %s already exists!" % new_version)
+            sys.exit(2)
+
+        print("Bumping %s version in library: %s -> %s" % (
+            bump_type, current_version, new_version))
+
+        self.write_new_version(new_version)
+
+        command('git add %s' % self.version_file)
+        command("git commit -m 'release: bump version to %s'" % new_version)
+        command("git tag %s" % new_version)
+
+    def read_version_file(self):
+        with open(self.version_file, 'r') as f:
+            return f.readlines()
+
+    def find_version(self, default):
+        for line in self.read_version_file():
+            if line.startswith('__version__'):
+                return line.split("=")[1].strip()
+        return default
+
+    def write_new_version(self, version):
+        version_file_lines = self.read_version_file()
+        found_line_num = None
+        for line_num, line in enumerate(version_file_lines):
+            if line.startswith('__version__'):
+                found_line_num = line_num
+                break
+
+        version_line = "__version__ = '%s'\n" % version
+        if found_line_num is not None:
+            version_file_lines[found_line_num] = version_line
+        else:
+            version_file_lines.append(version_line)
+
+        with open(self.version_file, 'w') as f:
+            f.writelines(version_file_lines)
+
+
+def bump_test(start, type, expected):
+    calculated = calculate_bump(start, type)
+    assert expected == calculated, calculated
+
+
+def parse_args():
+    """
+    Support 2 formats:
+        just version, eg: patch
+        version file path and version, eg: mymod/__init__.py major
+    """
+    if len(sys.argv) == 2:
+        return None, sys.argv[1]
+    elif len(sys.argv) == 3:
+        return sys.argv[1:3]
+    else:
+        return None, None
+
+
+if __name__ == '__main__':
+    bump_test('0.0.0', 'major', '1.0.0')
+    bump_test('1.0.0', 'patch', '1.0.1')
+    bump_test('1.0.1', 'minor', '1.1.0')
+    bump_test('1.1.0', 'patch', '1.1.1')
+    bump_test('1.1.1', 'major', '2.0.0')
+
+    version_file_path, bump_type = parse_args()
+
+    if not version_file_path:
+        version_file_path = find_version_file()
+
+    if version_file_path and not os.path.isfile(version_file_path):
+        print("'%s' doesn't exist!" % version_file_path)
+        usage()
+
+    version_bumper = VersionBumper(version_file_path)
+
+    if not bump_type:
+        usage(version_bumper.find_version('Unknown'))
+
+    if bump_type not in BUMP_TYPES:
+        print("'%s' is not a known version bump type." % bump_type)
+        usage()
+
+    version_bumper.bump_version(bump_type)
