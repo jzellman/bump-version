@@ -66,7 +66,7 @@ class VersionBumper:
     def __init__(self, path):
         self.version_file = path
 
-    def bump_version(self, bump_type):
+    def bump_version(self, bump_type, after_bump_command):
         current_version = self.find_version('0.0.0')
         new_version = calculate_bump(current_version, bump_type)
 
@@ -78,10 +78,16 @@ class VersionBumper:
             bump_type, self.version_file, current_version, new_version))
 
         self.write_new_version(new_version)
-
         command('git add %s' % self.version_file)
         command("git commit -m 'release: bump version to %s'" % new_version)
         command("git tag %s" % new_version)
+
+        if after_bump_command:
+            print("Running %s..." % after_bump_command)
+            command(after_bump_command)
+            # we must move the tag to the latest changelog entry in order for the commit
+            # to live inside the tag
+            command("git tag -f %s" % new_version)
 
     def read_version_file(self):
         with open(self.version_file, 'r') as f:
@@ -132,12 +138,16 @@ if __name__ == '__main__':
     parser.add_argument('-b', dest='bump_type', help='major,minor,patch',
                         required=False)
     parser.add_argument('--verbose', '-v', action='count')
+    parser.add_argument('--command', '-c', dest='after_bump_command',
+                        help='command to be ran after bumping, but before tagging. e.g. make changelog',
+                        required=False)
 
     args = parser.parse_args()
 
     version_file_path = args.version_file_path
     bump_type = args.bump_type
     verbose = bool(args.verbose)
+    after_bump_command = args.after_bump_command
 
     if not version_file_path:
         version_file_path = find_version_file()
@@ -161,4 +171,4 @@ if __name__ == '__main__':
         print("'%s' is not a known version bump type." % bump_type)
         sys.exit(3)
 
-    version_bumper.bump_version(bump_type)
+    version_bumper.bump_version(bump_type, after_bump_command)

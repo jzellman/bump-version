@@ -114,8 +114,22 @@ Bumping minor version in library: '1.0.1' -> 1.1.0
 ./bin/bump-version -f mymod/__init__.py -b major
 Bumping major version in 'mymod/__init__.py': 1.1.0 -> 2.0.0
 
-/bin/bump-version -f mymod/__init__.py
+./bin/bump-version -f mymod/__init__.py
 2.0.0
+```
+
+## Additional features
+
+### Support for running a command after version is bumped but before tagging is complete
+
+A good use is updating a changelog that uses git tags for reference. If we update the 
+changelog after ```bump-version``` is ran, the changelog won't be part of the tag. 
+Here is how you can handle that:
+
+```
+./bin/bump-version -b minor -c 'make changelog'
+Bumping minor version in library: '1.1.0' -> 1.2.0
+Running make changelog before tagging...
 ```
 
 
