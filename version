@@ -131,7 +131,7 @@ if __name__ == '__main__':
     bump_test('1.1.1', 'major', '2.0.0')
 
     parser = argparse.ArgumentParser(
-        description='Bump versions semantically. Example: {} -b patch'.format(
+        description='Print and bump version semantically. Example: {} -b patch'.format(
             __file__))
     parser.add_argument('-f', dest='version_file_path',
                         help='optional version file path', required=False)
