@@ -9,7 +9,7 @@ Just download the bump-version executable and place into your vendor/scripts/bin
 or stick it in your $HOME/bin or /usr/local/bin directory:
 
 ```
-curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/bump-version
+curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/version
 ```
 
 ## Usage:
@@ -21,8 +21,8 @@ cd project
 git init .
 mkdir bin
 pushd bin
-curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/bump-version
-chmod +x bump-version
+curl -O https://raw.githubusercontent.com/jzellman/bump-version/master/version
+chmod +x version
 popd
 ```
 
@@ -31,10 +31,10 @@ popd
 ```
 # lets check the help:
 
-./bin/bump-version -h
-usage: bump-version [-h] [-f VERSION_FILE_PATH] [-b BUMP_TYPE] [--verbose]
+./bin/version -h
+usage: version [-h] [-f VERSION_FILE_PATH] [-b BUMP_TYPE] [--verbose]
 
-Bump versions semantically. Example: ./bin/bump-version -b patch
+Bump versions semantically. Example: ./bin/version -b patch
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -42,7 +42,7 @@ optional arguments:
   -b BUMP_TYPE          major,minor,patch
   --verbose, -v
 
-./bin/bump-version
+./bin/version
 Error! No __init__ files found!
 
 # this is expected, lets create a module along with the typical support files:
@@ -56,28 +56,28 @@ mkdir docs
 git add bin/ mymod/
 git commit -m 'Initial commit.'
 
-./bin/bump-version
+./bin/version
 Unknown
 
 # verbose version
-./bin/bump-version -v
+./bin/version -v
 Current version in 'mymod/__init__.py': Unknown
 ```
 
 ### Lets mark the initial release
 ```
-./bin/bump-version -b major
+./bin/version -b major
 Bumping major version in 'mymod/__init__.py': 0.0.0 -> 1.0.0
 ```
 
 ### Verify tags and commits
 ```
-# lets check that the bump-version command knows about the current version:
-./bin/bump-version
+# lets check that the version command knows about the current version:
+./bin/version
 1.0.0
 
 # and now verbosely
-./bin/bump-version -v
+./bin/version -v
 Current version in 'mymod/__init__.py': 1.0.0
 
 # lets check the git log:
@@ -98,23 +98,23 @@ __version__ = '1.0.0'
 ### patches and minor changes
 ```
 # uh oh a bug was found!
-./bin/bump-version -b patch
+./bin/version -b patch
 Bumping patch version in library: '1.0.0' -> 1.0.1
 
 # a minor enhancement!
-./bin/bump-version -b minor
+./bin/version -b minor
 Bumping minor version in library: '1.0.1' -> 1.1.0
 ```
 
 ## Specifying the version file
 ```
-./bin/bump-version -f mymod/__init__.py
+./bin/version -f mymod/__init__.py
 1.1.0
 
-./bin/bump-version -f mymod/__init__.py -b major
+./bin/version -f mymod/__init__.py -b major
 Bumping major version in 'mymod/__init__.py': 1.1.0 -> 2.0.0
 
-./bin/bump-version -f mymod/__init__.py
+./bin/version -f mymod/__init__.py
 2.0.0
 ```
 
@@ -123,11 +123,11 @@ Bumping major version in 'mymod/__init__.py': 1.1.0 -> 2.0.0
 ### Support for running a command after version is bumped but before tagging is complete
 
 A good use is updating a changelog that uses git tags for reference. If we update the 
-changelog after ```bump-version``` is ran, the changelog won't be part of the tag. 
+changelog after ```version``` is ran, the changelog won't be part of the tag. 
 Here is how you can handle that:
 
 ```
-./bin/bump-version -b minor -c 'make changelog'
+./bin/version -b minor -c 'make changelog'
 Bumping minor version in library: '1.1.0' -> 1.2.0
 Running make changelog before tagging...
 ```
